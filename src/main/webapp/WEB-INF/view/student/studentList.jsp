@@ -13,7 +13,7 @@
 	</div>
 	
 	<h1>Student List</h1>
-	<a href="${pageContext.request.contextPath}/student/addStudent">학생등록</a>	
+	<a href="${pageContext.request.contextPath}/employee/addStudent">학생등록</a>	
 	<br><br>
 		<table border="1">
 			<tr>
@@ -26,14 +26,27 @@
 				<tr>
 					<td>${s.studentId}</td>
 					<td>${s.studentName}</td>
-					<td><a href="${pageContext.request.contextPath}/student/removeStudent?studentNo=${s.studentNo}">삭제</a></td>
+					<td><a href="${pageContext.request.contextPath}/employee/removeStudent?studentNo=${s.studentNo}">삭제</a></td>
 				</tr>
 			</c:forEach>
 		
 		</table>
+		<form method="get" action="${pageContext.request.contextPath}/employee/studentList">
+			<input type="text" name="searchWord">
+			<button type="submit">이름검색</button>
+		</form> 	
 		<div>
-			<a href="${pageContext.request.contextPath}/student/studentList?currentPage=${currentPage-1}">이전</a>
-			<a href="${pageContext.request.contextPath}/student/studentList?currentPage=${currentPage+1}">다음</a>	
+			<a href="${pageContext.request.contextPath}/employee/studentList?currentPage=1&searchWord=${searchWord}">처음</a>
+				<c:if test="${currentPage > 1}">		
+					<a href="${pageContext.request.contextPath}/employee/studentList?currentPage=${currentPage-1}&searchWord=${searchWord}">이전</a>
+				</c:if>			
+				<c:forEach begin="${startPage}" end="${endPage}" step="1" var="i">
+					<a href="${pageContext.request.contextPath}/employee/studentList?currentPage=${i}&searchWord=${searchWord}">${i}</a>									
+				</c:forEach>
+				<c:if test="${currentPage < lastPage}">		
+					<a href="${pageContext.request.contextPath}/employee/studentList?currentPage=${currentPage+1}&searchWord=${searchWord}">다음</a>	
+				</c:if>	
+			<a href="${pageContext.request.contextPath}/employee/studentList?currentPage=${lastPage}&searchWord=${searchWord}">마지막</a>
 		</div>
 </body>
 </html>

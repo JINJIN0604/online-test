@@ -7,20 +7,20 @@
 <title></title>
 </head>
 <body>
-	<h1>추가</h1>
+	<h1>학생추가</h1>
 	<div>${errorMsg}</div>
-	<form method="post" action="${pageContext.request.contextPath}/teacher/addTeacher">
+	<form method="post" action="${pageContext.request.contextPath}/employee/addStudent">
 		<div>
-			teacherId :
-			<input type="text" name="teacherId"> 
+			studentId :
+			<input type="text" name="studentId"> 
 		</div>
 		<div>
-			teacherPw:
-			<input type="password" name="teacherPw"> 
+			studentPw:
+			<input type="password" name="studentPw"> 
 		</div>
 		<div>
-			teacherName :
-			<input type="text" name="teacherName"> 
+			studentName :
+			<input type="text" name="studentName"> 
 		</div>
 		<div>
 			<button type="submit">추가</button>
