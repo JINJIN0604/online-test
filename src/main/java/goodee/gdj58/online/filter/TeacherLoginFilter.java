@@ -14,29 +14,24 @@ import javax.servlet.http.HttpSession;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j //(로그 객체 주입) static Log log = new Log();
+@Slf4j
 @WebFilter("/teacher/*")
-public class TeacherLoginFilter implements Filter{
+public class TeacherLoginFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		
-		log.debug("TeacherLoginFilter");
-		
-		if(request instanceof HttpServletRequest) { //ServletRequest 자식타입에 해당하는 객체로 형변환
-			HttpServletRequest req = (HttpServletRequest)request;			
-			HttpSession session = req.getSession();
-			
+		log.debug("\u001B[35m"+"TeacherLoginFilter"); 
+		if(request instanceof HttpServletRequest) { // instanceof 형변환 확인용
+			HttpServletRequest req = (HttpServletRequest)request;
+			HttpSession session = ((HttpServletRequest) request).getSession();
 			if(session.getAttribute("loginTeacher") == null) {
-				((HttpServletResponse) response).sendRedirect(req.getContextPath()+"/loginTeacher");
+				((HttpServletResponse)response).sendRedirect(req.getContextPath()+"/loginTeacher");
+				// web component라서 contextPath 필요
 				return;
 			}
 		} else {
-			log.debug("웹브라우저 요청만 허용합니다");
+			log.debug("웹브라우저 요청만 허용합니다."); 
 			return;
 		}
-	
-		// controller 전
-		chain.doFilter(request, response); 
-		// controller 후
+		chain.doFilter(request, response);
 	}
 }
