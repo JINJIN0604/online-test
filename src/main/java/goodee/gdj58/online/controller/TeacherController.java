@@ -19,110 +19,110 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 public class TeacherController {
-	@Autowired TeacherService teacherService;
-	@Autowired IdService idService;
+	@Autowired private IdService idservice;
+	@Autowired private TeacherService teacherService;
 
-	//pw수정 폼
-	@GetMapping("/employee/modifyTeacherPw")
-	public String modifyTeacherPw(HttpSession session) {
-				
-		return "/employee/modifyTeacherPw";
+	// 2) 강사 기능
+	// 강사 비밀번호 수정
+	@GetMapping("/teacher/modifyTeacherPw")
+	public String modifyTeacherPw() {
+		return "teacher/modifyTeacherPw";
 	}
 	
-	//pw수정 액션
-	@PostMapping("/employee/modifyTeacherPw")
-	public String modifyTeacherPw(HttpSession session, @RequestParam(value="oldPw") String oldPw, @RequestParam(value="newPw") String newPw) {		
-		// 로그인 후 호출 가능
-		Teacher loginTeacher= (Teacher)session.getAttribute("loginTeacher");	
-		teacherService.updateTeacherPw(loginTeacher.getTeacherNo(), oldPw, newPw);
-		
-		return "redirect:/employee/empList";
-	}	
+	@PostMapping("/teacher/modifyTeacherPw")
+	public String modifyTeacherPw(HttpSession session, @RequestParam(value = "oldPw") String oldPw, @RequestParam(value = "newPw") String newPw) {
+		Teacher loginTeacher = (Teacher)session.getAttribute("loginTeacher");
+		int row = teacherService.modifyTeacherPw(oldPw, newPw, loginTeacher.getTeacherNo());
+		if(row == 1) {
+			log.debug("\u001B[31m"+"강사 비밀번호 수정 성공");
+		}
+		return "redirect:/teacher/modifyTeacherPw";
+	}
 	
-	//로그인 폼
+	// 강사 로그인
 	@GetMapping("/loginTeacher")
-	public String loginTeacher(HttpSession session) {
-		log.debug("loginTeacher teacher");
-		return "employee/loginTeacher";
+	public String loginTeacher() {
+		log.debug("\u001B[31m"+"loginTeacher 폼");
+		return "teacher/loginTeacher";
 	}
-	//로그인 액션
 	@PostMapping("/loginTeacher")
-	public String loginTeacher(HttpSession session, Teacher teacher) {		
-		Teacher resultTeacher  = teacherService.login(teacher);
-		session.setAttribute("loginEmp", resultTeacher);
-		return "redirect:/employee/empList";
-	}	
-	
-	//로그아웃
-	@GetMapping("/teacher/logout")
-	public String logout(HttpSession session) {
-		session.invalidate();
-		return "redirect:/employee/loginTeacher";
+	public String loginTeacher(HttpSession session, Teacher teacher) {
+		Teacher resultTeacher =  teacherService.login(teacher);
+		log.debug("\u001B[35m"+"강사 로그인 성공");
+		System.out.println(resultTeacher.getTeacherId());
+		session.setAttribute("loginTeacher", resultTeacher);
+		return "redirect:/main";
 	}
 	
-	//삭제
-	@GetMapping("employee/removeTeacher")
-	public String removeTeacher(@RequestParam("teacherNo") int teacherNo) {
-
-		teacherService.removeTeacher(teacherNo);
-		return "redirect:/employee/teacherList"; //리스트로 리다이렉트
-	}	
-	
-	
-	//입력(추가) 폼
-	@GetMapping("employee/addTeacher")
-	public String addTeacher() {		
-		return "employee/addTeacher"; // forWord
+	// 강사 메인
+	@GetMapping("/teacher/teacherMain")
+	public String teacherMain() {
+		return "teacher/teacherMain";
 	}
 	
-	//입력(추가) 액션
-	@PostMapping("employee/addTeacher")
-	public String addTeacher(Model model, Teacher teacher) { // 매개변수가 달라서 괜찮다:오버로딩			
-		
-		String idCheck = idService.getIdCheck(teacher.getTeacherId());
-		if(idCheck != null) {
-			model.addAttribute("errorMsg", "중복된ID");
-			return "employee/addTeacher";
+	// 1) 관리자 기능
+	// 강사 삭제
+	@GetMapping("/employee/removeTeacher")
+	public String removeTeacher(@RequestParam(value = "teacherNo") int  teacherNo) {
+		int row = teacherService.removeTeacher(teacherNo);
+		if(row == 1) {
+			log.debug("\u001B[31m"+"강사 삭제 성공");
+		}
+		return "redirect:/employee/teacherList"; // 리스트로 이동
+	}
+	
+	// 강사 추가
+	@GetMapping("/employee/addTeacher")
+	public String addTeacher(HttpSession session) {
+		return"employee/addTeacher";
+	}
+	
+	@PostMapping("/employee/addTeacher")
+	public String addTeacher(Teacher teacher, HttpSession session, Model model) {
+		// id 중복확인
+		String idCheck = idservice.getIdCheck(teacher.getTeacherId());
+		if(idCheck != null) { // null이면 아이디 사용가능
+			log.debug("\u001B[31m" + "아이디 중복");
+			model.addAttribute("msg", "아이디 중복");
+			return "redirect:/employee/addTeacher";
 		}
 		
 		int row = teacherService.addTeacher(teacher);
 		if(row == 0) {
-			model.addAttribute("errorMsg", "시스템에러로 등록실패");
-			return "teacher/addTeacher";
+			model.addAttribute("msg", "강사등록 실패");
 		}
-		return "redirect:/employee/teacherList";	// sendRedirect, CM -> C
+		log.debug("\u001B[31m" + "강사 등록성공");
+		return "redirect:/employee/teacherList"; 
 	}
-			
-		
-	//리스트
-	@GetMapping("employee/teacherList")
-	public String teacherList(Model model
-							, @RequestParam(value="currentPage", defaultValue = "1") int currentPage
-							, @RequestParam(value="rowPerPage", defaultValue = "10") int rowPerPage
-							, @RequestParam(value="searchWord", defaultValue = "") String searchWord) { 
-							
-							// int currentPage(y)= request.getParamenter("currentPage(x)");	
 
-		int lastPage = (int)Math.ceil((double)teacherService.lastPage(searchWord)/(double)rowPerPage);
-		int startPage = (currentPage/rowPerPage)*10+1;
-		int endPage = (currentPage/rowPerPage)*10+10;
+	// 강사 목록
+	@GetMapping("/employee/teacherList")
+	public String teacherList(Model model
+							, @RequestParam(value = "currentPage", defaultValue = "1") int currentPage
+							, @RequestParam(value = "rowPerPage", defaultValue = "10") int rowPerPage
+							, @RequestParam(value = "word", defaultValue = "") String word) {
+		log.debug("\u001B[31m" +  word + "  <=  word");
+		log.debug("\u001B[31m" + currentPage + "  <=  currentPage");
+		log.debug("\u001B[31m" + rowPerPage + "  <=  rowPerPage");
+		List<Teacher> list = teacherService.getTeacherList(currentPage, rowPerPage, word);
+		int count = teacherService.getTeacherCount(word);
+		int page = 10; // 페이징 목록 개수
+		int beginPage = ((currentPage - 1)/page) * page + 1; // 시작 페이지
+		int endPage = beginPage + page - 1; // 페이징 목록 끝
+		int lastPage = (int)Math.ceil((double)count / (double)rowPerPage); // 마지막 페이지
 		if(endPage > lastPage) {
 			endPage = lastPage;
 		}
-		if(lastPage < 1) {
-			lastPage = currentPage;
-		}
-		
-		List<Teacher> list = teacherService.getTeacherList(currentPage, rowPerPage, searchWord);
-		//request.setAttribute("list", list);
-		model.addAttribute("list", list);
-		model.addAttribute("currentPage", currentPage);
-		model.addAttribute("searchWord", searchWord);
+		model.addAttribute("list",list);
+		model.addAttribute("currentPage",currentPage);
+		model.addAttribute("rowPerPage", rowPerPage);
+		model.addAttribute("word", word);
+		model.addAttribute("beginPage", beginPage);
+		model.addAttribute("endPage", endPage);
 		model.addAttribute("lastPage", lastPage);
-		
-		model.addAttribute("startPage", startPage);
-		model.addAttribute("endPage", endPage);		
-		return "teacher/teacherList";
-	}	
-
+		log.debug("\u001B[31m" + beginPage + "  <=  beginPage");
+		log.debug("\u001B[31m" + endPage + "  <=  endPage");
+		log.debug("\u001B[31m" + lastPage + "  <=  lastPage");
+		return "employee/teacherList";
+	}
 }

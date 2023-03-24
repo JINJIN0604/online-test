@@ -17,9 +17,6 @@
 		<c:when test="${loginStudent != null}">
 			Student
 		</c:when>
-		<c:otherwise>
-			Main
-		</c:otherwise>
 	</c:choose>
 	
 	<c:choose>
